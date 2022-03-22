@@ -1,3 +1,9 @@
+/*
+ * globals.h
+ *
+ *  Created on: Mar 21, 2022
+ *      Author: user
+ */
 
 #ifndef GLOBALS_H_
 #define GLOBALS_H_
@@ -55,21 +61,21 @@ typedef enum opcode
 
 	CMP_OC = 1,
 
-	ADD_OC = 2,
-	SUB_OC = 2,
+	ADD_OC = 2, /* funct 10 */
+	SUB_OC = 2, /* funct 11 */
 
 	LEA_OC = 4,
 	/* end first group */
 
 	/* second group - 1 operand */
-	CLR_OC = 5,
-	NOT_OC = 5,
-	INC_OC = 5,
-	DEC_OC = 5,
+	CLR_OC = 5, /* funct 10 */
+	NOT_OC = 5, /* funct 11 */
+	INC_OC = 5, /* funct 12 */
+	DEC_OC = 5, /* funct 13 */
 
-	JMP_OC = 9,
-	BNE_OC = 9,
-	JSR_OC = 9,
+	JMP_OC = 9, /* funct 10 */
+	BNE_OC = 9, /* funct 11 */
+	JSR_OC = 9, /* funct 12 */
 
 	RED_OC = 12,
 
@@ -114,13 +120,13 @@ typedef enum funct
 /* addressing modes */
 typedef enum addressingModes
 {
-	/* immediate */
+	/* immediate # */
 	IMME_ADDR = 0,
 
 	/* direct */
 	DIR_ADDR = 1,
 
-	/* index */
+	/* index [] */
 	INDX_ADDR = 2,
 
 	/* register direct */
