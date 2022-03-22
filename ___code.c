@@ -7,6 +7,8 @@
 #include "utils.h"
 
 #define MAX_OPERAND 2 /* max operand allowed */
+#define MIN_OPERAND 0 /* minimum operand allowed */
+#define ZERO_DEFAULT 0 /* default value 0 */
 
 /* --- cmd_lookup_element in his code anat remove delete */
 /* opcode-funct search table */
@@ -15,7 +17,7 @@ struct opcFuncSearchTbl
 	char *oppr; /* operation */
 	opcode opc; /* opcode */
 	funct func; /* funct */
-	
+
 }; /* end struct opcFuncSearchTbl */
 
 
@@ -44,12 +46,12 @@ static struct opcFuncSearchTbl searchTbl[] = {
 
 /* --- get_opcode_func in his code anat remove delete */
 /* gets the operation opcode and funct according to the operation's value */
-void getOppOCFun (char *oppr, opcode *destOpc, funct *destFunc)
+void getOpeOCFun (char *oppr, opcode *destOpc, funct *destFunc)
 {
 	struct opcFuncSearchTbl *ost;
 	*destOpc = NA_OC;
 	*destFunc = NA_FUNCT;
-	
+
 	/* going over the opcode-funct search table */
 	for (ost = searchTbl; ost->oppr != NULL; ost++) {
 		/* compare operations, and if they are the same, return the opcode anat */
@@ -58,9 +60,9 @@ void getOppOCFun (char *oppr, opcode *destOpc, funct *destFunc)
 			*destOpc = ost->opc;
 			*destFunc = ost->func;
 			return; /* anat do you have return in void?? */
-		}		
+		}
 	}
-} /* end getOppOCFun */
+} /* end getOpeOCFun */
 
 /* --- addressing_type get_addressing_type in his code anat remove delete */
 /* gets the operand addressing mode according to the operand's value */
@@ -99,24 +101,26 @@ addressingModes getAddressMode(char *operandVal)
 	{
 		return REGI_DIR_ADDR;
 	}
-	/* if we use this we need to remove the first if, i think anat 
+	/* if we use this we need to remove the first if, i think anat
 	else
 	{
 		return NA_ADDR;
 	}*/
-
-	while (operandVal[i])
+	else
 	{
-		if (operandVal[i] == '[')
+		while (operandVal[i])
 		{
-			inxFlag = 1; /* index flag. set to yes */
-		}
-		else if ((operandVal[i] == ']') && inxFlag == 0) /* maybe 1 anat */
-		{
-			return INDX_ADDR;
-		}
-		i++;
-	} /* end while */
+			if (operandVal[i] == '[')
+			{
+				inxFlag = 1; /* index flag. set to yes */
+			}
+			else if ((operandVal[i] == ']') && inxFlag == 1 && (operandVal[i]+1 == '\0'))
+			{
+				return INDX_ADDR;
+			}
+			i++;
+		} /* end while */
+	}
 
 } /* end addressing modes getAddressMode */
 
@@ -137,7 +141,7 @@ registers getRegiVal (char *valToGet)
 			{
 				return regiNum; /* returns the register number */
 			}
-		}	
+		}
 
 	}
 	else if (strlen(valToGet) == 3) /* r10 - r15 */
@@ -150,6 +154,8 @@ registers getRegiVal (char *valToGet)
 			int *regiNum;
 			regiNum[0] = regiFirstNum;
 			regiNum[1] = regiSecondNum;
+			/* regiNum[0] = valToGet[1] - '0'; */
+			/* regiNum[1] = valToGet[2] - '0'; */
 
 			/* we have 10-15 two digits registers */
 			if (regiNum >= 10 && regiNum <= 15)
@@ -163,102 +169,129 @@ registers getRegiVal (char *valToGet)
 	return NA_REG;
 } /* end registers getRegiVal */
 
+/* --- validate_op_addr in his code anat remove delete */
+/*
+static int legalAddreModePerOpc (addressingModes currAddrFirstOperand, addressingModes currAddrSecondOperand,
+		int amountValidAddrFirstOpe, int amountValidAddrSecOpe ) */
+static int legalAddreModePerOpc (addressingModes srcOperandAddrMode, addressingModes destOperandAddrMode,
+		int validAddre, int amountValidAddrSecOpe )
+{
+
+} /*end legalAddreModePerOpc */
+
+
+
 
 /* --- validate_operand_by_opcode in his code anat remove delete */
-/* opcode check operand allwoed according to groups */
-int opcodeGroupsCheck (opcode opc, int countOC)
+/* opcode check operand allowed according to groups */
+int opcodeGroupsCheck (opcode opc, int countOper)
 {
 	if (opc >= RTS_OC && opc <= STOP_OC ) /* third group. should have zero operands */
 	{
-		if (countOC > 0)
+		if (countOper > 0)
 		{
 			/* anat amir add printErrToFile func */
-			printErrToFile("%d Operands Ditected! No Operands should exist!", countOC);
+			printErrToFile("%d Operands Detected! No Operands should exist!", countOper);
 			return 0; /* error. expected 0 operands */
 		}
-	} 
+	}
 	else if (opc >= CLR_OC && opc <= PRN_OC) /* second group. clr,not,inc,dec,jmp,bne,jsr,red,prn. gets 1 operand */
 	{
-		if (countOC < 1)
+		if (countOper < 1)
 		{
 			/* anat amir add printErrToFile func */
-			printErrToFile("No Operands Ditected! One Operand should exist!");
+			printErrToFile("No Operands Detected! One Operand should exist!");
 			return 0; /* error. expected 1 operand */
 		}
-		else if (countOC > 1)
+		else if (countOper > 1)
 		{
 			/* anat amir add printErrToFile func */
-			printErrToFile("%d Operands Ditected! Only 1 Operand should exist!", countOC);
+			printErrToFile("%d Operands Detected! Only 1 Operand should exist!", countOper);
 			return 0; /* error. expected 1 operand */
 		}
 	}
 	else if (opc >= MOV_OC && opc <= LEA_OC) /* first group. mov, cmp, add, sub. gets 2 operands */
 	{
-		if (countOC == 0)
+		if (countOper == 0)
 		{
 			/* anat amir add printErrToFile func */
-			printErrToFile("No Operands Ditected! 2 Operands should exist!");
+			printErrToFile("No Operands Detected! 2 Operands should exist!");
 			return 0; /* error. expected 2 operands */
 		}
-		else if (countOC > 2 || countOC == 1)
+		else if (countOper > 2 || countOper == 1)
 		{
 			/* anat amir add printErrToFile func */
-			printErrToFile("%d Operands Ditected! 2 Operands should exist!", countOC);
+			printErrToFile("%d Operands Detected! 2 Operands should exist!", countOper);
 			return 0; /* error. expected 2 operands */
-		}	
+		}
 	}
-	return 1; /* all good */ 
-	
+	return 1; /* all good */
+
 } /* end opcodeGroupsCheck */
 
 
 /* --- code_word *get_code_word in his code anat remove delete */
-/*  */
-multiWord *createMultiWord (opcode opc, funct fnc, int countOC, char *operandVal[MAX_OPERAND])
+/* returns a pointer to multi word struct anat */
+multiWord *createMultiWord (opcode opc, funct fnc, int countOper, char *operandNum[MAX_OPERAND])
 {
 	multiWord *mw;
-	/* check addressing modes */
-	addressingModes firstMode = countOC >= 1 ? getAddressMode(operandVal[0]) : NA_ADDR;
-	addressingModes secondMode = countOC == 2 ? getAddressMode(operandVal[1]) : NA_ADDR;
+	singleWord *sw;
+	int goTo = 0;
 
-	if (opcodeGroupsCheck(opc, countOC) == 0) 
+	/* check addressing modes - check what he did here anat  */
+	addressingModes srcMode = countOper >= 1 ? getAddressMode(operandNum[0]) : NA_ADDR; /* operandNum[0] first operand */
+	addressingModes destMode = countOper == 2 ? getAddressMode(operandNum[1]) : NA_ADDR; /* operandNum[1] second operand */
+
+	if (opcodeGroupsCheck(opc, countOper) == 0)
 	{
 		return 0; /* error. operands issues */
 	}
 
 	mw = (multiWord *)tryToMalloc(sizeof(multiWord));
-	
-	/* set all to 0 */
-	mw->destAddr = mw->destRegi = mw->srcAddr = mw->srcRegi = 0;
-	mw->opcode = opc; /* i think we need to change it anat */
-	mw->funct = fnc; /* i think we need to change it anat */
-	mw->ARE = ((1 << 2) & 0xFF); /* maybe instead of 2 set it to 16? anat have no idea why he added 0xFF (= 255)  */
-	mw->CONST = 0;
+	sw = (singleWord *)tryToMalloc(sizeof(singleWord));
 
+
+	goTo = opc; /* anat check if its ok */
+	sw->OPC |= (1 << goTo); /* take 1 and move it opc places to the left. anat */
+	sw->E = sw-> R = 0;
+	sw->A |= (1 << 18); /* 18th bit with be 1 */
+	sw->CONST = ZERO_DEFAULT;
+	newLine *nline; /* anat how to separate lines? */
+
+
+	mw->destAddr = mw->destRegi = mw->srcAddr = mw->srcRegi = 0;
+
+	mw->funct = fnc; /* i think we need to change it anat */
+	mw->E = sw-> R = 0;
+	mw->A |= (1 << 18); /* 18th bit with be 1 */
+	/*mw->ARE = ((1 << 2) & 0xFF);  maybe instead of 2 set it to 16? anat have no idea why he added 0xFF (= 255)  */
+	mw->CONST = ZERO_DEFAULT;
+
+	newLine *nline; /* anat how to separate lines? */
 	/* check if need to turn on (set to 1) a bit anat */
 	if (opc >= MOV_OC && opc <= LEA_OC) /* first group. gets 2 operands */
 	{
-		mw->srcAddr = firstMode;
-		mw->destAddr = secondMode;
-		
+		mw->srcAddr = srcMode;
+		mw->destAddr = destMode;
+
 		/* have no idea what he did here anat */
-		if (firstMode == REGI_DIR_ADDR)
+		if (srcMode == REGI_DIR_ADDR)
 		{
-			mw->srcRegi = getRegiVal(operandVal[0]);
+			mw->srcRegi = getRegiVal(operandNum[0]);
 		}
 
-		if (secondMode == REGI_DIR_ADDR)
+		if (destMode == REGI_DIR_ADDR)
 		{
-			mw->destRegi = getRegiVal(operandVal[1]);
+			mw->destRegi = getRegiVal(operandNum[1]);
 		}
 	}
 	else if (opc >= CLR_OC && opc <= PRN_OC) /* second group. gets 1 operand */
 	{
-		mw->destAddr = firstMode;
-		
-		if (firstMode == REGI_DIR_ADDR)
+		mw->destAddr = srcMode;
+
+		if (srcMode == REGI_DIR_ADDR)
 		{
-			mw->destRegi = getRegiVal(operandVal[0]);
+			mw->destRegi = getRegiVal(operandNum[0]);
 		}
 	}
 
@@ -270,10 +303,26 @@ multiWord *createMultiWord (opcode opc, funct fnc, int countOC, char *operandVal
 
 /* --- data_word *build_data_word in his code anat remove delete */
 /* creates a single word */
-singleWord *createSingleWord (addressingModes aMode,  )
+singleWord *createSingleWord (opcode opc, funct fnc, int countOper)
 {
-	
+		singleWord *sw;
+		int goTo = 0;
 
+		if (opcodeGroupsCheck(opc, countOper) == 0)
+		{
+			return 0; /* error. operands issues */
+		}
+
+		sw = (singleWord *)tryToMalloc(sizeof(singleWord)); /* maybe remove anat */
+
+
+		goTo = opc; /* anat check if its ok */
+		sw->OPC |= (1 << goTo); /* take 1 and move it opc places to the left. anat */
+		sw->E = sw->R = 0;
+		sw->A |= (1 << 18); /* 18th bit with be 1 */
+		sw->CONST = ZERO_DEFAULT;
+
+		return sw; /* return singleWord */
 
 } /* end singleWord */
 
