@@ -310,12 +310,13 @@ void handle_symbol_assign(char ** words)
 	symbolType = get_symbol_type(words);
 	size = calculate_symbol_memory_size(words, symbolType, symbolName);
 
+	/* anat we need to debug it and change it */
 	/* Different value for data and instructions */
-	if (symbolType == ENTRY) /* COMMAND was here anat */
+	if (symbolType == CODE) /* COMMAND was here anat */
 	{
 		value = get_instructions_counter(size);
 	}
-	else if (symbolType == DATA)
+	else if (symbolType == DATA || symbolType == ENTRY )
 	{
 		value = get_data_counter(size);
 	}
