@@ -21,8 +21,6 @@ void print_symbol_list()
 		printf("value: %d\n",current->symbol.value);
 		printf("base: %d\n",current->symbol.baseAddr);
 		printf("offset: %d\n",current->symbol.offset);
-		/*printf("isMacro: %d\n",current->symbol.isMacro);
-		printf("isExternal: %d\n",current->symbol.isExternal);*/
 		printf("--------------------------\n");
 		current = current->next;
 	}
@@ -105,6 +103,7 @@ bool is_in_symbol_list(Symbol symbol)
 void add_symbol_to_list(Symbol symbol)
 {
 	if(is_in_symbol_list(symbol)) {
+		/* anat we need to change it. we can have the same name if its: .entry LABEL (example) */
 		printf("WARNING: %s declared twice, ignored.\n", symbol.name);
 		return;
 	}
@@ -124,8 +123,8 @@ int get_symbol_value_by_name(char * name)
 
 	return -1;
 }
-
-bool is_symbol_external(char * name)
+/* anat it was bool and i've change it to int */
+int is_symbol_external(char * name)
 {
 	symbolListPtr current = symbolListHead;
 	while(current != NULL) {
@@ -135,10 +134,11 @@ bool is_symbol_external(char * name)
 		current = current->next;
 	}
 
-	return false;
+	return -1; /* false anat */
 }
 
-bool is_symbol_code(char * name)
+/* anat it was bool and i've change it to int */
+int is_symbol_code(char * name)
 {
 	symbolListPtr current = symbolListHead;
 	while(current != NULL) {
@@ -148,10 +148,11 @@ bool is_symbol_code(char * name)
 		current = current->next;
 	}
 
-	return false;
+	return -1; /* false anat */
 }
 
-bool is_symbol_entry(char * name)
+/* anat it was bool and i've change it to int */
+int is_symbol_entry(char * name)
 {
 	symbolListPtr current = symbolListHead;
 	while(current != NULL) {
@@ -161,10 +162,11 @@ bool is_symbol_entry(char * name)
 		current = current->next;
 	}
 
-	return false;
+	return -1; /* false anat */
 }
 
-bool is_symbol_data(char * name)
+/* anat it was bool and i've change it to int */
+int is_symbol_data(char * name)
 {
 	symbolListPtr current = symbolListHead;
 	while(current != NULL) {
@@ -174,21 +176,9 @@ bool is_symbol_data(char * name)
 		current = current->next;
 	}
 
-	return false;
+	return -1; /* false anat */
 }
 
-/*bool is_symbol_macro(char * name)
-{
-	symbolListPtr current = symbolListHead;
-	while(current != NULL) {
-		if (strcmp(current->symbol.name, name) == 0) {
-			return current->symbol.isMacro;
-		}
-		current = current->next;
-	}
-
-	return false;
-}*/
 
 bool is_symbol_in_list(char * name)
 {
