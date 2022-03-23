@@ -42,27 +42,45 @@ unsigned int get_symbol_type(char ** words) /* anat i think that according to th
 
 	while(words[i]) {
 		/* word starts with DATA initializer */
-		if (words[i][0] == '.') {
+		if (words[i][0] == '.')
+		{
 			/* validate approved type */
-			if(!is_valid_symbol_data_type(words[i])) {
+			if(!is_valid_symbol_data_type(words[i]))
+			{
 				printf("unknown data type %s on line %d\n", words[i], get_file_line());
 				set_error_mode();
 			}
-			type = DATA;
-			break;
+
+			if ((strcmp(type, DATA_TYPE_DATA) == 0) || (strcmp(type, DATA_TYPE_STRING) == 0))
+			{
+				type = DATA;
+				break;
+			}
+			else if ((strcmp(type, DATA_TYPE_ENTRY) == 0))
+			{
+				type = ENTRY;
+				break;
+			}
+			else if((strcmp(type, DATA_TYPE_EXTERN) == 0))
+			{
+				type = EXTERNAL;
+				break;
+			}
+
 		}
 		i++;
 	}
 
-	if(type != DATA) {
-		if(!is_valid_symbol_command_type(words[1])) {/* validate COMMAND type */
+	if(type != DATA && type != ENTRY && type != EXTERNAL) {
+		/* validate COMMAND type */
+		if(!is_valid_symbol_command_type(words[1]))
+		{
 			printf("unknown command %s on line %d\n", words[1], get_file_line());
 			set_error_mode();
 		}
 
-		type = ENTRY; /* anat COMMAND was here */
+		type = CODE; /* anat COMMAND was here */
 	}
-
 
 	return type;
 }
@@ -127,7 +145,8 @@ char ** remove_symbol_name(char ** words, char * name)
 
 bool is_valid_symbol_data_type(char * type)
 {
-	if((strcmp(type, DATA_TYPE_DATA) == 0) || (strcmp(type, DATA_TYPE_STRING) == 0)) {
+	if((strcmp(type, DATA_TYPE_DATA) == 0) || (strcmp(type, DATA_TYPE_STRING) == 0)
+			|| (strcmp(type, DATA_TYPE_ENTRY) == 0) || (strcmp(type, DATA_TYPE_EXTERN) == 0)) {
 		return true;
 	}
 
