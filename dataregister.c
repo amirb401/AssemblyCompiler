@@ -9,7 +9,6 @@ extern void set_error_mode();
 
 extern int get_instructions_counter(int size);
 
-extern bool is_symbol_macro(char * name);
 
 extern int get_symbol_value_by_name(char * name);
 
@@ -46,10 +45,17 @@ int calculate_data_space(char ** data)
 		return 0;
 	}
 
-	if (type == DATA_TYPE) {
+	if (type == DAT_TYPE) {
 		size = calculate_data_type(data);
-	} else if (type == STRING_TYPE) {
+	}
+	else if (type == STRIN_TYPE) {
 		size = calculate_string_type(data);
+	}
+	else if (type == ENT_TYPE) {
+		size = calculate_string_type(data); /* anat add calc_entry_type */
+	}
+	else if (type == EXT_TYPE) {
+		size = calculate_string_type(data); /* anat add calc_external_type */
 	}
 	return size;
 }
@@ -57,10 +63,10 @@ int calculate_data_space(char ** data)
 bool validate_data(char ** data, DataType type)
 {
 	/* if type data */
-	if (type == DATA_TYPE) {
+	if (type == DAT_TYPE) {
 		return validate_data_type(data);
 
-	} else if (type == STRING_TYPE) { /* if is string */
+	} else if (type == STRIN_TYPE) { /* if is string */
 		return validate_string_type(data);
 
 	}
@@ -82,15 +88,22 @@ bool validate_string_type(char **data)
 	return true;
 }
 
-DataType get_data_type(char ** data)
+DataType get_data_type(char ** data) /* anat ---------------- */
 {
 	if (strcmp(data[0], DATA_TYPE_SYMBOL) == 0) {
-		return DATA_TYPE;
-	} else if (strcmp(data[0], STRING_TYPE_SYMBOL) == 0) {
-		return STRING_TYPE;
+		return DAT_TYPE;
+	}
+	else if (strcmp(data[0], STRING_TYPE_SYMBOL) == 0) {
+		return STRIN_TYPE; /* maybe return DAT_TYPE; */
+	}
+	else if (strcmp(data[0], ENT_TYPE_SYMBOL) == 0) {
+		return ENT_TYPE;
+	}
+	else if (strcmp(data[0], EXT_TYPE_SYMBOL) == 0) {
+		return EXT_TYPE;
 	}
 
-	return NDT;
+	return ND_T;
 }
 
 int calculate_data_type(char ** data)
@@ -161,7 +174,7 @@ void string_to_bin(char ** words)
 	}
 	/* add end of string */
 	line.lineNumber = get_instructions_counter(1);
-	line.bits = decimal_to_bin(0, 14);
+	line.bits = decimal_to_bin(0, 20);
 	push_line_to_list(line);
 
 	/* free allocated space */
@@ -175,7 +188,7 @@ void char_to_bin(char c)
 	int value = c - '0';
 
 	line.lineNumber = get_instructions_counter(1);
-	line.bits = decimal_to_bin(value, 14);
+	line.bits = decimal_to_bin(value, 20);
 	push_line_to_list(line);
 }
 
@@ -188,29 +201,20 @@ void data_array_to_bin(char ** words)
 	while(words[i]) {
 		
 		if (!string_is_number(words[i])) {
-			value = macro_to_bin(words[i]);
+			value = 999; /* anat */
 		} else {
 			value = atoi(words[i]);
 		}
 
 		line.lineNumber = get_instructions_counter(1);
-		line.bits = decimal_to_bin(value, 14);
+		line.bits = decimal_to_bin(value, 20);
 		push_line_to_list(line);
 		i++;
 	}
 
 }
 
-int macro_to_bin(char * macro)
-{
-	if (!is_symbol_macro(macro)) {
-		printf("unauthorized symbol %s on line %d\n", macro, get_file_line());
-		set_error_mode();
-		return 0;
-	}
 
-	return get_symbol_value_by_name(macro);
-}
 
 bool string_is_number(char * s)
 {
