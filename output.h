@@ -10,6 +10,7 @@ typedef enum machineCode {
 	R
 } MachineCode;
 
+
 typedef struct outputLine {
 	int lineNumber;
 	char *bits;
