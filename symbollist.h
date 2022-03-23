@@ -8,30 +8,31 @@
 
 /* type of symbol */
 typedef enum symbolType {
-	EMPTY,
-	DATA,
-	COMMAND
+	EXTERNAL,
+	CODE,
+	ENTRY,
+	DATA
 } SymbolType;
 
 
-/* the stract and the parameters of a symbol */
+/* the struct and the parameters of a symbol */
 typedef struct {
-	char *name;
-	enum symbolType type;
-	int value;
-	int size;
-	bool isMacro;
-	bool isExternal;
-}  Symbol;
+	char *name; /* symbol name */
+	enum symbolType attrType; /* attribute types */
+	int value; /* value of address in memory in decimal */
+	int baseAddr; /* base address */
+	int offset; /* offset */
+
+} Symbol;
 
 /* struct of pointer for the node next parameter ד*/
 typedef struct node * symbolListPtr;
 
-/* node decleration */
+/* node deceleration */
 typedef struct node {
 	Symbol symbol;
 	symbolListPtr next;
-}  SymbolListItem;
+} SymbolListItem;
 
 /* list head */
 symbolListPtr symbolListHead;
