@@ -32,8 +32,6 @@ void char_to_bin(char c);
 
 void data_array_to_bin(char ** words);
 
-int macro_to_bin(char * macro);
-
 bool string_is_number(char * s);
 
 int calculate_data_space(char ** data)
