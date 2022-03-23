@@ -65,26 +65,16 @@ void first_loop_process(char *line)
 {
 	char ** words = convert_line_to_words_array(line); /* anat i think we can change the name and that it covers numbers as well */
 
-	if (is_data(words[0])) { /* anat maybe without the 0 cause its an array of numbers */
+	if (is_data(words[0]) || is_string(words[0])) { /* anat maybe without the 0 cause its an array of numbers */
 		handle_data_symbol(words);
-		return;
-	}
-	else if(is_string(words[0])){
-		handle_code_symbol(words);
 		return;
 	}
 	else if(is_entry(words[0])) {/* ignore entry type symbols */
 		handle_entry_symbol(words);
 		return;
-
 	}
 	else if(is_external(words[0]))
-	{/* handle external symbols */
-		handle_external_symbol(words);
-		return;
-	}
-	else if(is_external(words[0]))
-	{/* handle external symbols */
+	{
 		handle_external_symbol(words);
 		return;
 	}
@@ -93,7 +83,13 @@ void first_loop_process(char *line)
 		handle_symbol_assign(words);
 		return;
 	}
-	else if(is_command(words[0]))
+	else
+	{
+		handle_code_symbol(words);
+		return;
+	}
+
+	if(is_command(words[0])) /* what is that anat */
 	{ /* handle commands */
 		handle_command(words);
 		return;
