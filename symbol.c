@@ -35,8 +35,8 @@ char * get_symbol_name(char ** words)
 	return name;
 }
 
-unsigned int get_symbol_type(char ** words)
-{
+unsigned int get_symbol_type(char ** words) /* anat i think that according to this we should insert to the symbols table*/
+{ /* anat so we should add more ifs and whiles */
 	int i = 0;
 	SymbolType type;
 
@@ -60,7 +60,7 @@ unsigned int get_symbol_type(char ** words)
 			set_error_mode();
 		}
 
-		type = COMMAND;
+		type = ENTRY; /* anat COMMAND was here */
 	}
 
 
@@ -75,7 +75,7 @@ unsigned int calculate_symbol_memory_size(char ** words, int type, char * name)
 	/* only data without symbol name */
 	data = remove_symbol_name(words, name);
 
-	if (type == COMMAND) {
+	if (type == ENTRY) { /* anat COMMAND was here */
 		/* calculate command */
 		size = calculate_command_space(data);
 	} else if (type == DATA) {
@@ -98,7 +98,7 @@ char ** remove_symbol_name(char ** words, char * name)
 	strcat(nameClone, ":");
 
 	/**
-	* copy words array withouth symbols name
+	* copy words array without symbols name
 	*/
 	while(words[i]) {
 		if(strcmp(nameClone, words[i]) != 0) {
