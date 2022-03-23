@@ -1,6 +1,7 @@
 #include "lineprocess.h"
 #include "symbollist.h"
 #include "symbol.h"
+#include <math.h>
 
 int instructions_memory = 0;
 
@@ -28,15 +29,16 @@ char ** convert_line_to_words_array(char *line);
 
 bool is_external(char word[]);
 
-bool is_entry(char word[]);
+bool is_data(char word[]);
 
-bool is_macro(char word[]);
+bool is_string(char word[]);
+
+bool is_entry(char word[]);
 
 bool is_symbol_assign(char ** words);
 
 void handle_external_symbol(char ** words);
 
-void handle_macro_symbol(char ** words);
 
 void handle_symbol_assign(char ** words);
 
@@ -56,28 +58,38 @@ void reset_entry_list();
 
 void first_loop_process(char *line)
 {
-	char ** words = convert_line_to_words_array(line);
+	char ** words = convert_line_to_words_array(line); /* anat i think we can change the name and that it covers numbers as well */
 
-	if(is_entry(words[0])) {/* ignore entry type symbols */
+	if (is_data(words[0])) { /* anat maybe without the 0 cause its an array of numbers */
+		return;
+	}
+	else if(is_string(words[0])){
+		return;
+	}
+	else if(is_entry(words[0])) {/* ignore entry type symbols */
 		return;
 
-	}else if(is_external(words[0])) {/* handle external symbols */
+	}
+	else if(is_external(words[0]))
+	{/* handle external symbols */
 		handle_external_symbol(words);
 		return;
-
-	}else if(is_macro(words[0])) {/* handle macro symbols */
-		handle_macro_symbol(words);
+	}
+	else if(is_external(words[0]))
+	{/* handle external symbols */
+		handle_external_symbol(words);
 		return;
-
-	}else if(is_symbol_assign(words)) { /* handle symbol assign */
+	}
+	else if(is_symbol_assign(words))
+	{ /* handle symbol assign */
 		handle_symbol_assign(words);
 		return;
-
-	} else if(is_command(words[0])) { /* handle commands */
+	}
+	else if(is_command(words[0]))
+	{ /* handle commands */
 		handle_command(words);
 		return;
 	}
-
 
 	return;
 }
@@ -86,10 +98,7 @@ void second_loop_process(char *line)
 {
 	char ** words = convert_line_to_words_array(line);
 
-	if (is_macro(words[0])) {/* ignore macro */
-		return;
-
-	}else if(is_entry(words[0])) { /* add to entry list */
+	if(is_entry(words[0])) { /* add to entry list */
 		add_to_entry_list(words[1]);
 		return;
 
@@ -171,16 +180,30 @@ bool is_entry(char word[])
 }
 
 /**
- * checks weather sign is the .define key word
+ * checks weather sign is the .data key word
  */
-bool is_macro(char word[])
+bool is_data(char word[])
 {
-	if(strcmp(MACRO_SIGN, word) == 0) {
+	if(strcmp(DATA_SIGN, word) == 0) {
 		return true;
 	}
 
 	return false;
 }
+
+
+/**
+ * checks weather sign is the .string key word
+ */
+bool is_string(char word[])
+{
+	if(strcmp(STRING_SIGN, word) == 0) {
+		return true;
+	}
+
+	return false;
+}
+
 
 /**
  * checks weather sign a regular symbol assign
@@ -212,46 +235,64 @@ void handle_external_symbol(char ** words)
 
 	/* create symbol */
 	symbol.name = words[1];
-	symbol.type = EMPTY;
-	symbol.value = EXTERNAL_ADDRESS_VALUE;
-	symbol.size = 0;
-	symbol.isMacro = false;
-	symbol.isExternal = true;
+	symbol.attrType = EXTERNAL;
+	symbol.value = EXTERNAL_SYMBOL_TABLE_VALUE;
+	symbol.baseAddr = EXTERNAL_SYMBOL_TABLE_VALUE;
+	symbol.offset = EXTERNAL_SYMBOL_TABLE_VALUE;
+
 
 	/* add to symbols list */
 	add_symbol_to_list(symbol);
 }
 
-/**
- * adds symbol to list
- */
-void handle_macro_symbol(char ** words)
+/* adds symbol to list */
+void handle_data_symbol(char ** words) /* anat ---------------- */
 {
-	int i = 0;
 	Symbol symbol;
-	int macroValue;
 
-	/* prepare macro valus */
-	while(words[i]) {
-		/* get value after "=" sign */
-		if(strcmp(words[i], "=") == 0) {
-			macroValue = atoi(words[i+1]);
-			break;
-		}
-		i++;
-	}
-
-	/* prepare symbol */
+	/* create symbol */
 	symbol.name = words[1];
-	symbol.type = EMPTY;
-	symbol.value = macroValue;
-	symbol.size = 1;
-	symbol.isMacro = true;
-	symbol.isExternal = false;
+	symbol.attrType = DATA;
+	symbol.value = get_instructions_counter(0); /* anat memory address */
+	symbol.offset = ((symbol.value) % 16); /* address mod 16 = offset */
+	symbol.baseAddr = ((symbol.value) - (symbol.offset)); /* address minus offset = base */
 
 	/* add to symbols list */
 	add_symbol_to_list(symbol);
 }
+
+/* adds symbol to list */
+void handle_entry_symbol(char ** words) /* anat ---------------- */
+{
+	Symbol symbol;
+
+	/* create symbol */
+	symbol.name = words[1];
+	symbol.attrType = ENTRY;
+	symbol.value = get_instructions_counter(0); /* anat memory address */
+	symbol.offset = ((symbol.value) % 16); /* address mod 16 = offset */
+	symbol.baseAddr = ((symbol.value) - (symbol.offset)); /* address minus offset = base */
+
+	/* add to symbols list */
+	add_symbol_to_list(symbol);
+}
+
+/* adds symbol to list */
+void handle_code_symbol(char ** words) /* anat ---------------- */
+{
+	Symbol symbol;
+
+	/* create symbol */
+	symbol.name = words[1];
+	symbol.attrType = CODE;
+	symbol.value = get_instructions_counter(0); /* anat memory address */
+	symbol.offset = ((symbol.value) % 16); /* address mod 16 = offset */
+	symbol.baseAddr = ((symbol.value) - (symbol.offset)); /* address minus offset = base */
+
+	/* add to symbols list */
+	add_symbol_to_list(symbol);
+}
+
 
 void handle_symbol_assign(char ** words)
 {
@@ -265,20 +306,22 @@ void handle_symbol_assign(char ** words)
 	symbolType = get_symbol_type(words);
 	size = calculate_symbol_memory_size(words, symbolType, symbolName);
 
-	/* differrent value for data and instructions */
-	if (symbolType == COMMAND) {
+	/* Different value for data and instructions */
+	if (symbolType == ENTRY) /* COMMAND was here anat */
+	{
 		value = get_instructions_counter(size);
-	} else if (symbolType == DATA) {
+	}
+	else if (symbolType == DATA)
+	{
 		value = get_data_counter(size);
 	}
 
 	/* create symbol */
 	symbol.name = symbolName;
-	symbol.type = symbolType;
-	symbol.value = value;
-	symbol.size = size;
-	symbol.isMacro = false;
-	symbol.isExternal = false;
+	symbol.attrType = symbolType; /* attribute type */
+	symbol.value = value; /* address in memory value */
+	symbol.baseAddr; /* base address */
+	symbol.offset; /* offset */
 
 	add_symbol_to_list(symbol);
 
@@ -302,8 +345,8 @@ void update_data_symbols_addresses()
 
 	while(current != NULL) {
 		/* only data symbols */
-		if (current->symbol.type == DATA) {
-			/* updates adres after end of ic*/
+		if (current->symbol.attrType == DATA) {
+			/* updates addre after end of ic*/
 			current->symbol.value += ic;
 		}
 		current = current->next;
