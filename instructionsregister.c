@@ -10,6 +10,14 @@ AddressingMode noImmediateAddressModes[] = {DIRECT, INDEXED, REGISTER};
 /* 1,2 */
 AddressingMode drctAndIndxAddressModes[] = {DIRECT, INDEXED};
 
+/* related to opcode 2 */
+funct opcode2add[] = {ADD_FUNCT};
+funct opcode2sub[] = {SUB_FUNCT};
+/* related to opcode 5 */
+funct opcode5[] = {CLR_FUNCT, NOT_FUNCT, INC_FUNCT, DEC_FUNCT};
+/* related to opcode 9 */
+funct opcode9[] = {JMP_FUNCT, BNE_FUNCT, JSR_FUNCT};
+
 
 /**
 * Collection of all the commands,
@@ -21,72 +29,84 @@ Command command_list[16] = {
 	{
 		0,
 		"mov",
+		NULL,
 		allAddressModes,
 		noImmediateAddressModes
 	},
 	{
 		1,
 		"cmp",
+		NULL,
 		allAddressModes,
 		allAddressModes
 	},
 	{
 		2,
 		"add",
+		opcode2add,
 		allAddressModes,
 		noImmediateAddressModes
 	},
 	{
-		3,
+		2,
 		"sub",
+		opcode2sub,
 		allAddressModes,
 		noImmediateAddressModes
 	},
 	{
 		4,
 		"lea",
+		NULL,
 		drctAndIndxAddressModes,
 		noImmediateAddressModes
 	},
 	{
 		5,
 		"clr",
+		opcode5, /* CLR_FUNCT */
 		NULL,
 		noImmediateAddressModes
 	},
 	{
-		6,
+		5,
 		"not",
+		opcode5, /* NOT_FUNCT */
 		NULL,
 		noImmediateAddressModes
 	},
 	{
-		7,
+		5,
 		"inc",
+		opcode5, /* INC_FUNCT */
 		NULL,
 		noImmediateAddressModes
 	},
 	{
-		8,
+		5,
 		"dec",
+		opcode5, /* DEC_FUNCT */
 		NULL,
 		noImmediateAddressModes
 	},
 	{
 		9,
 		"jmp",
+		opcode9, /* JMP_FUNCT */
 		NULL,
 		drctAndIndxAddressModes
 	},
 	{
-		10,
+		9,
 		"bne",
+		opcode9, /* BNE_FUNCT */
 		NULL,
 		drctAndIndxAddressModes
 	},
 	{
-		11,
+		9,
 		"jsr",
+		opcode9, /* JSR_FUNCT */
 		NULL,
 		drctAndIndxAddressModes
 	},
@@ -94,11 +114,13 @@ Command command_list[16] = {
 		12,
 		"red",
 		NULL,
+		NULL,
 		noImmediateAddressModes
 	},
 	{
 		13,
 		"prn",
+		NULL,
 		NULL,
 		allAddressModes
 	},
@@ -106,11 +128,13 @@ Command command_list[16] = {
 		14,
 		"rts",
 		NULL,
+		NULL,
 		NULL
 	},
 	{
 		15,
 		"stop",
+		NULL,
 		NULL,
 		NULL
 	}
@@ -123,8 +147,6 @@ extern void set_error_mode();
 extern bool is_symbol_external(char * name);
 
 extern bool is_symbol_in_list(char * name);
-
-extern bool is_symbol_macro(char * name);
 
 extern int get_symbol_value_by_name(char * name);
 
@@ -753,17 +775,16 @@ void create_array_lines(char * op)
 	MachineCode labelMc;
 	MachineCode indexlMc = A;
 
-	if (isdigit(indexName[0]) > 0) { /* is numeric value */
+	if (isdigit(indexName[0]) > 0)
+	{ /* is numeric value */
 		indexValue = atoi(indexName);
-
-	} else if (is_symbol_in_list(indexName)) {/* is valid symbol */
-		if (!is_symbol_macro(indexName)) {/* not macro */
-			printf("array index is not numeric or macro on line %d\n", get_file_line());
-			set_error_mode();
-		} else { /* is macro */
-			indexValue = get_symbol_value_by_name(indexName);
-		}
-	} else {
+	}
+	else if (is_symbol_in_list(indexName))
+	{
+		indexValue = get_symbol_value_by_name(indexName);
+	}
+	else
+	{
 		printf("undefined array index %s on line %d\n", indexName, get_file_line());
 		set_error_mode();
 	}
