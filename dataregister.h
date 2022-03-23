@@ -6,12 +6,17 @@
 #define DEFAULT_VALUE 0
 #define DATA_TYPE_SYMBOL ".data"
 #define STRING_TYPE_SYMBOL ".string"
+#define ENT_TYPE_SYMBOL ".entry"
+#define EXT_TYPE_SYMBOL ".external"
 
-typedef enum {
-	NDT, /* not data type */
-	STRING_TYPE,
-	DATA_TYPE
+typedef enum DataType {
+	ND_T, /* no data type */
+	DAT_TYPE,
+	STRIN_TYPE,
+	ENT_TYPE,
+	EXT_TYPE
 } DataType;
+
 
 int calculate_data_space(char ** data);
 
