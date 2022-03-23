@@ -52,9 +52,15 @@ void add_symbol_to_list(Symbol symbol);
 
 int get_symbol_value_by_name(char * name);
 
-bool is_symbol_external(char * name);
+int is_symbol_external(char * name);
 
-bool is_symbol_macro(char * name);
+int is_symbol_code(char * name);
+
+int is_symbol_entry(char * name);
+
+int is_symbol_data(char * name);
+
+
 
 bool is_symbol_in_list(char * name);
 
