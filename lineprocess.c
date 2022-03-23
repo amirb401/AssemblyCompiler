@@ -39,6 +39,11 @@ bool is_symbol_assign(char ** words);
 
 void handle_external_symbol(char ** words);
 
+void handle_data_symbol(char ** words);
+
+void handle_entry_symbol(char ** words);
+
+void handle_code_symbol(char ** words);
 
 void handle_symbol_assign(char ** words);
 
@@ -61,12 +66,15 @@ void first_loop_process(char *line)
 	char ** words = convert_line_to_words_array(line); /* anat i think we can change the name and that it covers numbers as well */
 
 	if (is_data(words[0])) { /* anat maybe without the 0 cause its an array of numbers */
+		handle_data_symbol(words);
 		return;
 	}
 	else if(is_string(words[0])){
+		handle_code_symbol(words);
 		return;
 	}
 	else if(is_entry(words[0])) {/* ignore entry type symbols */
+		handle_entry_symbol(words);
 		return;
 
 	}
@@ -320,8 +328,9 @@ void handle_symbol_assign(char ** words)
 	symbol.name = symbolName;
 	symbol.attrType = symbolType; /* attribute type */
 	symbol.value = value; /* address in memory value */
-	symbol.baseAddr; /* base address */
-	symbol.offset; /* offset */
+	symbol.offset = ((symbol.value) % 16); /* offset */
+	symbol.baseAddr = ((symbol.value) - (symbol.offset)) ; /* base address */
+
 
 	add_symbol_to_list(symbol);
 
