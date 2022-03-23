@@ -51,17 +51,17 @@ unsigned int get_symbol_type(char ** words) /* anat i think that according to th
 				set_error_mode();
 			}
 
-			if ((strcmp(type, DATA_TYPE_DATA) == 0) || (strcmp(type, DATA_TYPE_STRING) == 0))
+			if ((strcmp(words[i], DATA_TYPE_DATA) == 0) || (strcmp(words[i], DATA_TYPE_STRING) == 0))
 			{
 				type = DATA;
 				break;
 			}
-			else if ((strcmp(type, DATA_TYPE_ENTRY) == 0))
+			else if ((strcmp(words[i], DATA_TYPE_ENTRY) == 0))
 			{
 				type = ENTRY;
 				break;
 			}
-			else if((strcmp(type, DATA_TYPE_EXTERN) == 0))
+			else if((strcmp(words[i], DATA_TYPE_EXTERN) == 0))
 			{
 				type = EXTERNAL;
 				break;
