@@ -1,11 +1,13 @@
 #include <stdbool.h>
 #include <string.h>
 
-#define WORD_SPLIT_TOKENS " ,\n\t"
+#define WORD_SPLIT_TOKENS " ,\t"
 #define EXTERNAL_SIGN ".extern"
 #define ENTRY_SIGN ".entry"
-#define MACRO_SIGN ".define"
-#define EXTERNAL_ADDRESS_VALUE 0
+#define DATA_SIGN ".data"
+#define STRING_SIGN ".string"
+
+#define EXTERNAL_SYMBOL_TABLE_VALUE 0
 
 
 void first_loop_process(char *line);
