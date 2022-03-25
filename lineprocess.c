@@ -218,14 +218,15 @@ bool is_symbol_assign(char ** words)
 	char * word;
 	unsigned wordLength;
 
-	while(words[i]) {
+	if (words[i]){
+	/*while(words[i]) {*/
 		word = words[i];
 		wordLength = strlen(words[i]);
 		/* checks if the line is variable assign command */
 		if(word[wordLength-1] == SYMBOL_ASSIGN_SIGN) {
 			return true;
 		}
-		i++;
+		/*i++; anat */
 	}
 	return false;
 }
@@ -255,7 +256,7 @@ void handle_data_symbol(char ** words) /* anat ---------------- */
 	Symbol symbol;
 
 	/* create symbol */
-	symbol.name = words[1];
+	symbol.name = *words;
 	symbol.attrType = DATA;
 	symbol.value = get_instructions_counter(0); /* anat memory address */
 	symbol.offset = ((symbol.value) % 16); /* address mod 16 = offset */
@@ -343,7 +344,7 @@ void handle_command(char ** words)
 	get_instructions_counter(size);
 }
 
-void update_data_symbols_addresses()
+void update_data_symbols_addresses() /* it adds only data labels anat */
 {
 	int ic = get_instructions_counter(0);
 
