@@ -59,8 +59,8 @@ void print_outputline_list()
 	}
 }
 
- /*function that take a nuber and make it a bit with the given size */
-char * decimal_to_bin(int n,int s)
+ /*function that take a number and make it a bit with the given size */
+char * decimal_to_bin(int n,int s) /* number and size? anat */
 {
 	int c, d, count;
 	char *pointer;
@@ -95,8 +95,27 @@ int bin_to_decimal(char * bits)
 		}
 		i++;
 	}
+
 	return dec;
 }
+
+char bin_to_hex(int dec) {
+
+	int rem;
+	char hexnum;
+
+	while (dec != 0) {
+		rem = dec % 16;
+		if (rem < 10) {
+			rem = rem + 48;
+		} else {
+			rem = rem + 55;
+			hexnum = rem;
+		}
+	}
+	return hexnum;
+}
+
 
 void reset_output_list()
 {
@@ -181,20 +200,55 @@ void create_o_file(char * filename)
 
 char * bits_to_special_base4(char * bits)
 {
-	int i = 0;
+	int i = 19, j, z = 0;
 	int index = 0;
-	char * currentBits = (char *) malloc(3 * sizeof(char));
-	char * symbolLine = (char *) malloc((strlen(bits)/2) * sizeof(char));
+	int number;
+	char hex;
+	char * currentBits = (char *) malloc(4 * sizeof(char)); /*  */
+	char * symbolLine = (char *) calloc(14 , sizeof(char)); /* anat 14 bits for the A4-B... */
 
-	/* TODO add special 4 base logic */
-	while(bits[i]) {
-		currentBits[0] = bits[i];
-		currentBits[1] = bits[i+1];
-		currentBits[2] = '\0';
-		index = bin_to_decimal(currentBits);
-		symbolLine[(i+1)/2] = outputLineSymbols[index];
-		i+=2;
+	/* anat try */
+	while(bits[i])
+	{
+		j = i;
+		for (; j >= i-3; j-- )
+		{
+			currentBits[j] = bits[j];
+		}
+		symbolLine[z] = outputLineSymbols[index]; /* A */
+		printf("\n\n symbolLine[ABCDE]: %c\n",symbolLine[z] ); /* A */
+
+		number = bin_to_decimal(currentBits); /* translating 4 */
+
+		if(number > 9 && number < 16){
+			hex = bin_to_hex(number);
+			z++;
+			symbolLine[z] = hex; /* c */
+			printf("\n\n symbolLine[hex]: %c\n",symbolLine[z] ); /* c */
+		}
+		else if (number <= 9) {
+			z++;
+			symbolLine[z] = number;
+			printf("\n\n symbolLine[number]: %d\n",symbolLine[z] ); /* 4 */
+		}
+
+
+		/*if (number <= 9) {
+			symbolLine[z] = number;
+		}
+		else{
+			symbolLine[z] = hex;
+		}*/
+		z++;
+		symbolLine[z] = '-';
+		printf("symbolLine[-]: %c\n",symbolLine[z] ); /* - */
+
+		i = i-4;
+
+		index++;
+
 	}
+
 	return symbolLine;
 }
 
