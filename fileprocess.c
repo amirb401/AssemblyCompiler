@@ -1,7 +1,6 @@
 #include "fileprocess.h"
 #include "lineprocess.h"
 
-
 int _courrent_line_number = 0;
 
 bool _error_flag = false;
@@ -26,21 +25,12 @@ void reset_all();
 
 char * get_filename_prefix(char *);
 
-/* Receive file name, adds .extension to it and returns the file. AMIR*/
-char * appendExtension(char *filename){
-	char extension[3] = ".as";
-	strncat(filename, extension, 3);
-	printf(" new file name is: %s\n", filename);
-	return filename;
-}
-
 void process_file(char *filename)
 {
 	FILE *file;
    	char line[MAX_LINE_INPUT];
 	int ic_mem_cells, dc_mem_cells;
 	char * filenameprefix;
-	filename = appendExtension(filename); /* adds ".as" to input files. */
 
 	/* is valid file */
 	if((file = fopen(filename, "r"))) {
