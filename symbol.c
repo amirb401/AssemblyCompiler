@@ -1,209 +1,165 @@
-#include "symbollist.h"
 #include "symbol.h"
+#include "symbollist.h"
+#include "instructionsregister.h"
+#include "dataregister.h"
 
+extern int get_file_line();
+
+extern void set_error_mode();
+
+bool is_valid_symbol_data_type(char * type);
+
+bool is_valid_symbol_command_type(char * command);
 
 /**
- * print all the values in the list for the head node to EOF
- * if the list is empty print to the user
+ * returns symbol name/label
  */
-void print_symbol_list()
+char * get_symbol_name(char ** words)
 {
-	symbolListPtr current = symbolListHead;
+	int i = 0;
+	char * word;
+	char * name;
+	char * newName;
+	unsigned wordLength;
 
-	if(symbolListHead == NULL) {
-		printf("\n the list is empty\n");
-		return;
-	}
-	printf("--------Symbols List-------\n");
-	while(current != NULL) {
-		printf("--------------------------\n");
-		printf("name: %s\n",current->symbol.name);
-		printf("type: %d\n",current->symbol.attrType);
-		printf("value: %d\n",current->symbol.value);
-		printf("base: %d\n",current->symbol.baseAddr);
-		printf("offset: %d\n",current->symbol.offset);
-		printf("--------------------------\n");
-		current = current->next;
-	}
-}
+	while(words[i]) {
+		word = words[i];
+		wordLength = strlen(words[i]);
+		name = (char *) malloc(wordLength * sizeof(char));
 
-void push_symbol_to_list(Symbol symbol)
-{
-	symbolListPtr current = symbolListHead;
-	/* if head is empty*/
-	if(symbolListHead == NULL) {
-		/* push item to head*/
-		symbolListHead = (symbolListPtr) malloc(sizeof(SymbolListItem));
-		symbolListHead->symbol = symbol;
-		symbolListHead->next = NULL;
-	}
-	else {
-		/* go to last list item*/
-		while(current->next != NULL) {
-			current = current->next;
-		}
-		/*if (is_in_symbol_list(symbol)) {
-			/* add attribute anat --------- */
-			/* if it exists but we need to add an attribute to the table */
-
-		/*}*/
-		/*else { /* doesn't exists */
-			/* push symbol to last item */
-			current->next = (symbolListPtr) malloc(sizeof(SymbolListItem));
-			current->next->symbol = symbol;
-			current->next->next = NULL;
-
-	}
-}
-
-/* remove ONE item from list with the name value the same to the given name */
-void remove_from_symbol_list(char *nameToRemove)
-{
-	/* two pointer one is helper that get the previous node and one that run on the list */
-	symbolListPtr current = symbolListHead;
-	symbolListPtr helper = symbolListHead-1;
-	/*if the list is empty the function return with a message that the list is empty */
-	if(symbolListHead == NULL){
-		printf("\n the list is empty\n");
-		return;
-	}
-
-	/*
-	* run on the list with str cmp if value equal to zero
-	* (mean that the name is equal to the given) the current node next replaced with the next
-	* of the helper and get freed then the function break.
-	 */
-	while(current->next != NULL) {
-		if (strcmp(current->symbol.name, nameToRemove) == 0)
-		{
-			helper->next=current->next;
-			free(current);
+		if(word[wordLength-1] == SYMBOL_ASSIGN_SIGN) {
+			newName = (char *) realloc(name, wordLength * sizeof(char)); /* change to realloc anat */
+			strncat(newName, word, wordLength-1);
 			break;
 		}
-		current = current->next;
-		helper = helper->next;
-
+		i++;
 	}
+
+	return newName; /* anat changed */
 }
 
-bool is_in_symbol_list(Symbol symbol)
-{
-	symbolListPtr current = symbolListHead;
+unsigned int get_symbol_type(char ** words) /* anat i think that according to this we should insert to the symbols table*/
+{ /* anat so we should add more ifs and whiles */
+	int i = 0;
+	SymbolType type;
 
-	if(current != NULL) { /* should we remove this if? anat */
-		while(current != NULL) {
-			if ((strcmp(current->symbol.name, symbol.name) == 0) ) /* anat amir */
+	while(words[i]) {
+		/* word starts with DATA initializer */
+		if (words[i][0] == '.')
+		{
+			/* validate approved type */
+			if(!is_valid_symbol_data_type(words[i]))
 			{
-				return true;
+				printf("unknown data type %s on line %d\n", words[i], get_file_line());
+				set_error_mode();
 			}
-			current = current->next;
+
+			if ((strcmp(words[i], DATA_TYPE_DATA) == 0) || (strcmp(words[i], DATA_TYPE_STRING) == 0))
+			{
+				type = DATA;
+				break;
+			}
+			else if ((strcmp(words[i], DATA_TYPE_ENTRY) == 0))
+			{
+				type = ENTRY;
+				break;
+			}
+			else if((strcmp(words[i], DATA_TYPE_EXTERN) == 0))
+			{
+				type = EXTERNAL;
+				break;
+			}
+
 		}
+		i++;
+	}
+
+	if(type != DATA && type != ENTRY && type != EXTERNAL) { /* anat chacham */
+		/* validate COMMAND type */
+		if(!is_valid_symbol_command_type(words[1]))
+		{
+			printf("unknown command %s on line %d\n", words[1], get_file_line());
+			set_error_mode();
+		}
+
+		type = CODE; /* anat COMMAND was here */
+	}
+
+	return type;
+}
+
+unsigned int calculate_symbol_memory_size(char ** words, int type, char * name)
+{
+	unsigned int size = 0;
+	char ** data;
+
+	/* only data without symbol name */
+	data = remove_symbol_name(words, name);
+
+	if (type == ENTRY) { /* anat COMMAND was here */
+		/* calculate command */
+		size = calculate_command_space(data);
+	} else if (type == DATA) {
+		/* calculate data */
+		size = calculate_data_space(data);
+	}
+
+	return size;
+}
+
+char ** remove_symbol_name(char ** words, char * name)
+{
+	int i = 0;
+	int counter = 0;
+	char ** newWords = NULL;
+	/* clone name */
+	char * nameClone = (char *) malloc(strlen(name) * sizeof(char));
+	strcpy(nameClone, name);
+	/* concat assign symbol to match the one in the original file */
+	strcat(nameClone, ":");
+
+	/**
+	* copy words array without symbols name
+	*/
+	while(words[i]) {
+		if(strcmp(nameClone, words[i]) != 0) {
+			/*reallocating space from the next word in the array*/
+			newWords = (char **) realloc(newWords, (counter + 1) * sizeof(char *));
+			/* allocate space for the incoming word*/
+			newWords[counter] = (char *) malloc(sizeof(words[i]) * sizeof(char));
+			/* actually setting the word */
+			newWords[counter] = words[i];
+			counter++;
+		}
+		i++;
+	}
+
+	/* add NULL to last index to indicate the end of the array */
+	newWords = (char **) realloc(newWords, counter * sizeof(char *));
+	newWords[counter] = (char *) malloc(sizeof(char));
+	newWords[counter] = NULL;
+
+	/*free space*/
+	nameClone = NULL;
+	free(nameClone);
+
+	return newWords;
+}
+
+bool is_valid_symbol_data_type(char * type)
+{
+	if((strcmp(type, DATA_TYPE_DATA) == 0) || (strcmp(type, DATA_TYPE_STRING) == 0)
+			|| (strcmp(type, DATA_TYPE_ENTRY) == 0) || (strcmp(type, DATA_TYPE_EXTERN) == 0)) {
+		return true;
 	}
 
 	return false;
 }
 
-void add_symbol_to_list(Symbol symbol)
+bool is_valid_symbol_command_type(char * command)
 {
-	if(is_in_symbol_list(symbol)) {
-		/* anat we need to change it. we can have the same name if its: .entry LABEL (example) */
-		printf("WARNING: %s declared twice, ignored.\n", symbol.name);
-		return;
+	if(is_command(command)) {
+		return true;
 	}
-
-	push_symbol_to_list(symbol); /* we need to push only labels, shouldn't we? */
-}
-
-int get_symbol_value_by_name(char * name)
-{
-	symbolListPtr current = symbolListHead;
-	while(current != NULL) {
-		if (strcmp(current->symbol.name, name) == 0) {
-			return current->symbol.value;
-		}
-		current = current->next;
-	}
-
-	return -1;
-}
-/* anat it was bool and i've change it to int */
-int is_symbol_external(char * name)
-{
-	symbolListPtr current = symbolListHead;
-	while(current != NULL) {
-		if (strcmp(current->symbol.name, name) == 0) {
-			return current->symbol.attrType = EXTERNAL; /* anat */
-		}
-		current = current->next;
-	}
-
-	return -1; /* false anat */
-}
-
-/* anat it was bool and i've change it to int */
-int is_symbol_code(char * name)
-{
-	symbolListPtr current = symbolListHead;
-	while(current != NULL) {
-		if (strcmp(current->symbol.name, name) == 0) {
-			return current->symbol.attrType = CODE; /* anat */
-		}
-		current = current->next;
-	}
-
-	return -1; /* false anat */
-}
-
-/* anat it was bool and i've change it to int */
-int is_symbol_entry(char * name)
-{
-	symbolListPtr current = symbolListHead;
-	while(current != NULL) {
-		if (strcmp(current->symbol.name, name) == 0) { /* equals */
-			return current->symbol.attrType = ENTRY; /* anat */
-		}
-		current = current->next;
-	}
-
-	return -1; /* false anat */
-}
-
-/* anat it was bool and i've change it to int */
-int is_symbol_data(char * name)
-{
-	symbolListPtr current = symbolListHead;
-	while(current != NULL) {
-		if (strcmp(current->symbol.name, name) == 0) { /* equals */
-			return current->symbol.attrType = DATA; /* anat */
-		}
-		current = current->next;
-	}
-
-	return -1; /* false anat */
-}
-
-
-bool is_symbol_in_list(char * name) /* duplicated anat search: is_in_symbol_list */
-{
-	symbolListPtr current = symbolListHead;
-	while(current != NULL) {
-		if (strcmp(current->symbol.name, name) == 0) {
-			return true;
-		}
-		current = current->next;
-	}
-
 	return false;
-}
-
-void reset_symbol_list()
-{
-	symbolListPtr current = symbolListHead;
-	while(current) {
-		current->symbol.name = NULL;
-		free(current->symbol.name);
-		free(current);
-		current = current->next;
-	}
-	symbolListHead = NULL;
 }
