@@ -44,6 +44,8 @@ char * decimal_to_bin(int n,int s);
 
 int bin_to_decimal(char * bits);
 
+char bin_to_hex(int dec); /* anat */
+
 void reset_output_list();
 
 void add_to_external_list(char * name, int line);
