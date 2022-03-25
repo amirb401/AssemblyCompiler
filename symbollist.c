@@ -1,4 +1,5 @@
 #include "symbollist.h"
+#include "symbol.h"
 
 
 /**
@@ -41,17 +42,17 @@ void push_symbol_to_list(Symbol symbol)
 		while(current->next != NULL) {
 			current = current->next;
 		}
-		if (is_in_symbol_list(symbol)) {
+		/*if (is_in_symbol_list(symbol)) {
 			/* add attribute anat --------- */
 			/* if it exists but we need to add an attribute to the table */
 
-		}
-		else { /* doesn't exists */
+		/*}*/
+		/*else { /* doesn't exists */
 			/* push symbol to last item */
 			current->next = (symbolListPtr) malloc(sizeof(SymbolListItem));
 			current->next->symbol = symbol;
 			current->next->next = NULL;
-		}
+
 	}
 }
 
@@ -88,9 +89,11 @@ void remove_from_symbol_list(char *nameToRemove)
 bool is_in_symbol_list(Symbol symbol)
 {
 	symbolListPtr current = symbolListHead;
-	if(current != NULL) {
+
+	if(current != NULL) { /* should we remove this if? anat */
 		while(current != NULL) {
-			if (strcmp(current->symbol.name, symbol.name) == 0) {
+			if ((strcmp(current->symbol.name, symbol.name) == 0) ) /* anat amir */
+			{
 				return true;
 			}
 			current = current->next;
@@ -108,7 +111,7 @@ void add_symbol_to_list(Symbol symbol)
 		return;
 	}
 
-	push_symbol_to_list(symbol);
+	push_symbol_to_list(symbol); /* we need to push only labels, shouldn't we? */
 }
 
 int get_symbol_value_by_name(char * name)
@@ -180,7 +183,7 @@ int is_symbol_data(char * name)
 }
 
 
-bool is_symbol_in_list(char * name)
+bool is_symbol_in_list(char * name) /* duplicated anat search: is_in_symbol_list */
 {
 	symbolListPtr current = symbolListHead;
 	while(current != NULL) {
