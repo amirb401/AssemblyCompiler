@@ -24,9 +24,9 @@ struct opcFuncSearchTbl
 /* --- cmd_lookup_element lookup_table[] in his code anat remove delete */
 /* search table for opcode and funct according to operation's name */
 static struct opcFuncSearchTbl searchTbl[] = {
-	{"mov", MOV_OC, NA_FUNCT},    /* 	{"mov", MOV_OC, NA_FUNCT, 2}, */
-	{"cmp", CMP_OC, NA_FUNCT},    /* 	{"cmp", MOV_OC, NA_FUNCT, 1}, */
-	{"add", ADD_OC, ADD_FUNCT},    /* 	{"add", MOV_OC, NA_FUNCT, 0}, */
+	{"mov", MOV_OC, NA_FUNCT},
+	{"cmp", CMP_OC, NA_FUNCT},
+	{"add", ADD_OC, ADD_FUNCT},
 	{"sub", SUB_OC, SUB_FUNCT},
 	{"lea", LEA_OC, NA_FUNCT},
 	{"clr", CLR_OC, CLR_FUNCT},
@@ -97,7 +97,8 @@ addressingModes getAddressMode(char *operandVal)
 	/*}*/
 
 	/* if first char is 'r' and the next char is a number between 0-15 followed by space, return Register direct addressing */
-	else if (operandVal[0] == 'r' && operandVal[1] >= 0 && operandVal[1] <= 15 && operandVal[2] == '\0')
+	else if (operandVal[0] == 'r' && operandVal[1] >= 0 && operandVal[1] <= 9 &&
+			operandVal[2] >= 0 && operandVal[2] <= 5 && operandVal[3] == '\0')
 	{
 		return REGI_DIR_ADDR;
 	}
