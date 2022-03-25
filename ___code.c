@@ -240,7 +240,7 @@ multiWord *createMultiWord (opcode opc, funct fnc, int countOper, char *operandN
 	int goTo = 0;
 
 	/* check addressing modes - check what he did here anat  */
-	addressingModes srcMode = countOper >= 1 ? getAddressMode(operandNum[0]) : NA_ADDR; /* operandNum[0] first operand */
+	addressingModes srcMode = countOper == 1 ? getAddressMode(operandNum[0]) : NA_ADDR; /* operandNum[0] first operand */
 	addressingModes destMode = countOper == 2 ? getAddressMode(operandNum[1]) : NA_ADDR; /* operandNum[1] second operand */
 
 	if (opcodeGroupsCheck(opc, countOper) == 0)
