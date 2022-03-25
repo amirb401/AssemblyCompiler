@@ -202,7 +202,7 @@ void build_op_line(int value, MachineCode mc);
 
 signed int get_command_id(char * command)
 {
-	int count = 16;
+	int count = 17;
 
 	while(count--) {
 		if(strcmp(command_list[count].name, command) == 0) {
@@ -435,6 +435,7 @@ bool is_addressing_mode_allowed_by_command(AddressingMode addressing_mode, Addre
 	return true;
 }
 
+/* anat if addressing mode is null return 1 (why?) ; if add_mode dest and src = register return 2 */
 int calculate_space_by_addressing_modes(AddressingMode dest, AddressingMode src)
 {
 	int space = 1;
@@ -445,10 +446,11 @@ int calculate_space_by_addressing_modes(AddressingMode dest, AddressingMode src)
 		space += 1;
 		return space;
 	}
-
+	/* anat dest addressing mode : space = 1 + if null return 0; if index return 2; else return 1 */
+	/* anat src addressing mode : space = + if null return 0; if index return 2; else return 1 */
 	space += calculate_space_by_addressing_mode(dest) + calculate_space_by_addressing_mode(src);
 	return space;
-}
+} /* anat what a BALAGANNNNN */
 
 int calculate_space_by_addressing_mode(AddressingMode addressing_mode)
 {
@@ -459,7 +461,7 @@ int calculate_space_by_addressing_mode(AddressingMode addressing_mode)
 	}
 
 	return 1;
-}
+} /* anat amir we need to change it to match our maman */
 
 int get_instructions_counter(int size)
 {
@@ -587,11 +589,45 @@ int get_absolute_value(char * str)
 	return value;
 }
 
+/* anat changed */
 int get_register_value(char * reg)
 {
-	int value = 0;
-	value = reg[1] - '0';
-	return value;
+	int value = -1;
+
+	if (strlen(reg) == 2 && reg[0] == 'r' && isdigit((int) reg[1]) && reg[2] == '\0')
+	{
+		value = reg[1] - '0';
+
+		/* we have 0-9 single digit registers */
+		if (value >= 0 && value <= 9)
+		{
+			return value; /* returns the register number */
+		}
+	} /* end if */
+	else if (strlen(reg) == 3 && reg[0] == 'r' && isdigit((int) reg[1]) && isdigit((int) reg[2])
+			&& reg[3] == '\0')
+	{
+		int i;
+		int num[2];
+		for(i = 1; i < 3; i++)
+		{
+			if (!isdigit(reg[i]))
+			{
+				return 0; /* false, not a number */
+			}
+			else{
+				num[i-1] = reg[i];
+			}
+		} /* end for */
+		value = (int)num;
+
+		/* we have 10-15 two digits registers */
+		if (value >= 10 && value <= 15)
+		{
+			return value; /* returns the register number */
+		}
+	} /* end else if */
+	return value; /* negative is not valid! */
 }
 
 void instruction_to_bits(char ** commandline)
@@ -621,6 +657,7 @@ void instruction_to_bits(char ** commandline)
 	destAddressMode = addressing_mode_type(dest);
 	srcAddressMode = addressing_mode_type(src);
 
+	/* anat what he did here???? */
 	destAddressMode = destAddressMode == NAM ? IMMEDIATE : destAddressMode;
 	srcAddressMode = srcAddressMode == NAM ? IMMEDIATE : srcAddressMode;
 	commandCode = get_command_id(commandName);
@@ -695,11 +732,10 @@ void create_operand_lines(char * src, char * dest)
 void create_single_line_for_registers(char * src, char * dest)
 {
 	OutputLine line;
-	/*machineCode are;*/ /* AMIR added for A R E bits 16-18 since I don't see it?*/
 	int srcVal, destVal;
 	char * srcBits;
 	char * destBits;
-	char * bits = (char *) malloc(CELL_BIT_SIZE*sizeof(char)); /* AMIR changed from 14 to CELL_BIT_SIZE */
+	char * bits = (char *) malloc(14*sizeof(char));
 
 	srcVal = get_register_value(src);
 	destVal = get_register_value(dest);
@@ -799,45 +835,29 @@ void create_array_lines(char * op)
 
 void build_op_line(int value, MachineCode mc)
 {
-	OutputLine line; /* AMIR configured in "output.h" , struct of (lineNumber,*bits) */
+	OutputLine line;
 	int i = 0;
-	int j;
 	char * bits = malloc(CELL_BIT_SIZE * sizeof(char));
-	char * valueBits = decimal_to_bin(value, 16); /* AMIR changed to from 12 */
-	/*char * mcBits = decimal_to_bin(mc, 2); */
-	/*        ^  Our ARE isnt signed as 2bits but 3 individuals*/
-	
-	printf("\n VALUE : %d\n",value);
-	/* wanted to see the value .. if value is the number of the opcode then I can easily
-	translate it to be the bit that needs to be turned on (just check if equals to then)
-	but it seems to be repeating numbers of address in memory I believe for labels & values.
-	Need to understand what is the purpose of this value. */
-	
-	while(i<15) { /* AMIR changed to from 12, to represent 16 opcode bits*/
+	char * valueBits = decimal_to_bin(value, 16);
+	/*char * mcBits = decimal_to_bin(mc, 3); not in use anat */
+
+	while(i<15) {
 		bits[i] = valueBits[i];
 		i++;
 	}
-	/* machine code - AMIR this is ARE created in "output.h" so why only 2bits? */
-	/* was bits[..] = mcBits[0] and mcBits[1] because he translated the MC to binary and showed all 3 in that binary format; */
-	bits[16] = 0; /* A */
+	/* machine code amir */
+	bits[16] = 0; /* E - for external label's */
 	bits[17] = 0; /* R - for entry label's*/
-	bits[18] = 0; /* E - for external label's */
+	bits[18] = 0; /* A */
 	bits[19] = 0; /* Always 0 */
-	
-	/* AMIR */
-	if(mc == 0) /* machine code equals A */
-		bits[16] = 1;
-	else if(mc == 1) /* machine code equals R */
-		bits[17] = 1;
-	else 		/* machine code equals E */
-		bits[18] = 1;
 
-	/* AMIR DEBUG TO SEE HOW A LINE LOOKS WHEN DONE */
-	printf("Line number %d: ", line.lineNumber);
-	for(j=0; j<20; j++){
-		printf("%d ",bits[j]);
-	}
-	printf("\n"); /* go down new line */
+	if(mc == 0) /* machine code equals A */
+			bits[18] = 1;
+		else if(mc == 1) /* machine code equals R */
+			bits[17] = 1;
+		else 		/* machine code equals E */
+			bits[16] = 1;
+
 
 	line.bits = bits;
 	line.lineNumber = get_instructions_counter(1);
