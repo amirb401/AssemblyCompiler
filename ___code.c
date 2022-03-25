@@ -24,9 +24,9 @@ struct opcFuncSearchTbl
 /* --- cmd_lookup_element lookup_table[] in his code anat remove delete */
 /* search table for opcode and funct according to operation's name */
 static struct opcFuncSearchTbl searchTbl[] = {
-	{"mov", MOV_OC, NA_FUNCT},
-	{"cmp", CMP_OC, NA_FUNCT},
-	{"add", ADD_OC, ADD_FUNCT},
+	{"mov", MOV_OC, NA_FUNCT},    /* 	{"mov", MOV_OC, NA_FUNCT, 2}, */
+	{"cmp", CMP_OC, NA_FUNCT},    /* 	{"cmp", MOV_OC, NA_FUNCT, 1}, */
+	{"add", ADD_OC, ADD_FUNCT},    /* 	{"add", MOV_OC, NA_FUNCT, 0}, */
 	{"sub", SUB_OC, SUB_FUNCT},
 	{"lea", LEA_OC, NA_FUNCT},
 	{"clr", CLR_OC, CLR_FUNCT},

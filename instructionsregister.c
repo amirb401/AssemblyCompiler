@@ -695,10 +695,11 @@ void create_operand_lines(char * src, char * dest)
 void create_single_line_for_registers(char * src, char * dest)
 {
 	OutputLine line;
+	/*machineCode are;*/ /* AMIR added for A R E bits 16-18 since I don't see it?*/
 	int srcVal, destVal;
 	char * srcBits;
 	char * destBits;
-	char * bits = (char *) malloc(14*sizeof(char));
+	char * bits = (char *) malloc(CELL_BIT_SIZE*sizeof(char)); /* AMIR changed from 14 to CELL_BIT_SIZE */
 
 	srcVal = get_register_value(src);
 	destVal = get_register_value(dest);
@@ -798,19 +799,45 @@ void create_array_lines(char * op)
 
 void build_op_line(int value, MachineCode mc)
 {
-	OutputLine line;
+	OutputLine line; /* AMIR configured in "output.h" , struct of (lineNumber,*bits) */
 	int i = 0;
+	int j;
 	char * bits = malloc(CELL_BIT_SIZE * sizeof(char));
-	char * valueBits = decimal_to_bin(value, 12);
-	char * mcBits = decimal_to_bin(mc, 2);
-
-	while(i<12) {
+	char * valueBits = decimal_to_bin(value, 16); /* AMIR changed to from 12 */
+	/*char * mcBits = decimal_to_bin(mc, 2); */
+	/*        ^  Our ARE isnt signed as 2bits but 3 individuals*/
+	
+	printf("\n VALUE : %d\n",value);
+	/* wanted to see the value .. if value is the number of the opcode then I can easily
+	translate it to be the bit that needs to be turned on (just check if equals to then)
+	but it seems to be repeating numbers of address in memory I believe for labels & values.
+	Need to understand what is the purpose of this value. */
+	
+	while(i<15) { /* AMIR changed to from 12, to represent 16 opcode bits*/
 		bits[i] = valueBits[i];
 		i++;
 	}
-	/* machine code */
-	bits[12] = mcBits[0];
-	bits[13] = mcBits[1];
+	/* machine code - AMIR this is ARE created in "output.h" so why only 2bits? */
+	/* was bits[..] = mcBits[0] and mcBits[1] because he translated the MC to binary and showed all 3 in that binary format; */
+	bits[16] = 0; /* A */
+	bits[17] = 0; /* R - for entry label's*/
+	bits[18] = 0; /* E - for external label's */
+	bits[19] = 0; /* Always 0 */
+	
+	/* AMIR */
+	if(mc == 0) /* machine code equals A */
+		bits[16] = 1;
+	else if(mc == 1) /* machine code equals R */
+		bits[17] = 1;
+	else 		/* machine code equals E */
+		bits[18] = 1;
+
+	/* AMIR DEBUG TO SEE HOW A LINE LOOKS WHEN DONE */
+	printf("Line number %d: ", line.lineNumber);
+	for(j=0; j<20; j++){
+		printf("%d ",bits[j]);
+	}
+	printf("\n"); /* go down new line */
 
 	line.bits = bits;
 	line.lineNumber = get_instructions_counter(1);
